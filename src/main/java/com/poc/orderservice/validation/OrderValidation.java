@@ -2,16 +2,15 @@ package com.poc.orderservice.validation;
 
 
 import com.poc.orderservice.request.OrderRequestDto;
-import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Service
-public class OrderValidation {
 
-    public static List<String> validateOrder(OrderRequestDto orderRequest) {
+public interface OrderValidation {
+
+    static List<String> validateOrder(OrderRequestDto orderRequest) {
 
         List<String> errorList = new ArrayList<>();
 

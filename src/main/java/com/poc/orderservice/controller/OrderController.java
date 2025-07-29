@@ -3,6 +3,10 @@ package com.poc.orderservice.controller;
 import com.poc.orderservice.request.OrderRequestDto;
 import com.poc.orderservice.response.ApiResponse;
 import com.poc.orderservice.service.OrderService;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.data.web.SortDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,22 +21,22 @@ public class OrderController {
         this.orderService = orderService;
     }
 
-    @PostMapping("/createorder")
+    @PostMapping
     public ResponseEntity<ApiResponse> createOrder(@RequestBody OrderRequestDto orderRequestDto) {
-        ApiResponse apiResponse = orderService.createOrder(orderRequestDto);
-        return new ResponseEntity<>(apiResponse, HttpStatus.OK);
+        return new ResponseEntity<>(orderService.createOrder(orderRequestDto), HttpStatus.OK);
     }
 
-    @GetMapping("/orders")
-    public ResponseEntity<ApiResponse> getAllOrders() {
-        ApiResponse apiResponse = orderService.getAllOrders();
-        return new ResponseEntity<>(apiResponse, HttpStatus.OK);
+    @GetMapping
+    public ResponseEntity<ApiResponse> getAllOrders(@PageableDefault(page = 0, size = 100)
+                                                    @SortDefault.SortDefaults({
+                                                            @SortDefault(sort = "inventoryId", direction = Sort.Direction.DESC)})
+                                                    Pageable pageable) {
+        return new ResponseEntity<>(orderService.getAllOrders(pageable), HttpStatus.OK);
     }
 
-    @GetMapping("/orderById")
-    public ResponseEntity<ApiResponse> getOrderById(@RequestParam Long orderId) {
-        ApiResponse apiResponse = orderService.getOrderById(orderId);
-        return new ResponseEntity<>(apiResponse, HttpStatus.OK);
+    @GetMapping("/{orderId}")
+    public ResponseEntity<ApiResponse> getOrderById(@PathVariable("orderId") Long orderId) {
+        return new ResponseEntity<>(orderService.getOrderById(orderId), HttpStatus.OK);
     }
 
 }

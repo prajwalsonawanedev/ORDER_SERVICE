@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class FeignService {
+
     private final InventoryClient inventoryClient;
 
     @CircuitBreaker(name = "inventory_CB", fallbackMethod = "inventoryFallback")
