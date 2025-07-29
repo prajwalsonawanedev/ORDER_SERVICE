@@ -4,7 +4,6 @@ import com.poc.orderservice.entity.Order;
 import com.poc.orderservice.enums.OrderStatus;
 import com.poc.orderservice.exception.ResourceNotFoundException;
 import com.poc.orderservice.feignclient.FeignService;
-import com.poc.orderservice.feignclient.InventoryClient;
 import com.poc.orderservice.repository.OrderRepository;
 import com.poc.orderservice.request.InventoryRequestDto;
 import com.poc.orderservice.request.OrderRequestDto;
@@ -14,9 +13,11 @@ import com.poc.orderservice.service.OrderService;
 import com.poc.orderservice.utils.GenericMapper;
 import com.poc.orderservice.validation.OrderValidation;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,14 +32,13 @@ public class OrderServiceImpl implements OrderService {
 
     private final GenericMapper genericMapper;
 
-    private final InventoryClient inventoryClient;
-
     private final FeignService feignService;
 
     @Override
+    @Transactional
     public ApiResponse createOrder(OrderRequestDto orderRequestDto) {
 
-        if (!validateOrder(orderRequestDto)) {
+        if (validateOrder(orderRequestDto)) {
             Order order = genericMapper.convert(orderRequestDto, Order.class);
             order.setStatus(OrderStatus.VALIDATION_FAILED.name());
             orderRepository.save(order);
@@ -71,8 +71,9 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public ApiResponse getAllOrders() {
-        List<OrderResponseDto> orderList = orderRepository.findAll()
+    @Transactional
+    public ApiResponse getAllOrders(Pageable pageable) {
+        List<OrderResponseDto> orderList = orderRepository.findAll(pageable)
                 .stream()
                 .map(order -> genericMapper.convert(order, OrderResponseDto.class))
                 .toList();
@@ -81,6 +82,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    @Transactional
     public ApiResponse getOrderById(Long orderId) {
 
         if (ObjectUtils.isEmpty(orderId)) {
@@ -88,7 +90,7 @@ public class OrderServiceImpl implements OrderService {
         }
 
         Order order = orderRepository.findById(orderId).
-                orElseThrow(() -> new ResourceNotFoundException("Order Details Not found :" + orderId));
+                orElseThrow(() -> new ResourceNotFoundException(String.format("Order Details Not found :%s ", orderId)));
 
         OrderResponseDto orderResponseDto = genericMapper.convert(order, OrderResponseDto.class);
         return ApiResponse.response("Order Details Found", true, "Order Details", orderResponseDto);
@@ -98,13 +100,10 @@ public class OrderServiceImpl implements OrderService {
 
         errorList = OrderValidation.validateOrder(orderRequestDto);
 
-        if (!CollectionUtils.isEmpty(errorList)) {
-            return false;
-        }
-        return true;
+        return errorList.isEmpty() ? false : true;
     }
 
-    public InventoryRequestDto createInventoryRequestDto(Order order) {
+    private InventoryRequestDto createInventoryRequestDto(Order order) {
 
         return InventoryRequestDto
                 .builder()
