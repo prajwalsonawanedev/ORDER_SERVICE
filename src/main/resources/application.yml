@@ -12,3 +12,7 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: true  # Optional: shows SQL queries in console
+
+inventory:
+  service:
+    url: http://localhost:8081/api/inventory
