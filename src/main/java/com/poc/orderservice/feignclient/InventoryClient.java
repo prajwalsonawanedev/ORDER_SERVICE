@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 
-@FeignClient(name = "inventory-service", url = "http://localhost:8081/api/inventory") // or use Eureka service name
+@FeignClient(name = "inventory-service", url = "${inventory.service.url}")
 public interface InventoryClient {
 
     @PostMapping("/create-inventory")

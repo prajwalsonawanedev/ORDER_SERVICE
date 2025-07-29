@@ -3,6 +3,7 @@ package com.poc.orderservice.serviceimpl;
 import com.poc.orderservice.entity.Order;
 import com.poc.orderservice.enums.OrderStatus;
 import com.poc.orderservice.exception.ResourceNotFoundException;
+import com.poc.orderservice.feignclient.FeignService;
 import com.poc.orderservice.feignclient.InventoryClient;
 import com.poc.orderservice.repository.OrderRepository;
 import com.poc.orderservice.request.InventoryRequestDto;
@@ -32,6 +33,8 @@ public class OrderServiceImpl implements OrderService {
 
     private final InventoryClient inventoryClient;
 
+    private final FeignService feignService;
+
     @Override
     public ApiResponse createOrder(OrderRequestDto orderRequestDto) {
 
@@ -48,7 +51,8 @@ public class OrderServiceImpl implements OrderService {
         order = orderRepository.save(order);
 
         InventoryRequestDto inventoryRequestDto = createInventoryRequestDto(order);
-        ApiResponse apiResponse = inventoryClient.createInventory(inventoryRequestDto).getBody();
+
+        ApiResponse apiResponse = feignService.createInventory(inventoryRequestDto);
 
         if (apiResponse.isSuccess()) {
             order.setStatus(OrderStatus.SUCCESS.name());
@@ -60,7 +64,9 @@ public class OrderServiceImpl implements OrderService {
         order.setStatus(OrderStatus.FAILED.name());
         orderRepository.save(order);
 
-        return ApiResponse.response("Order Not Created", false, "Order Rejected due to Insufficient Stocks", orderRequestDto);
+        OrderResponseDto orderResponseDto = genericMapper.convert(order, OrderResponseDto.class);
+
+        return ApiResponse.response("Order Not Created", false, "Order Rejected due to Insufficient Stocks", orderResponseDto);
 
     }
 
