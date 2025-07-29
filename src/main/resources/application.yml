@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: Order-Service
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/POC?createDatabaseIfNotExist=true
+    username: root
+    password: "Prajwal@123"
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true  # Optional: shows SQL queries in console
