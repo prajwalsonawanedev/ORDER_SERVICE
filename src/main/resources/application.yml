@@ -11,7 +11,7 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
-    show-sql: true  # Optional: shows SQL queries in console
+    show-sql: true
 
 inventory:
   service:
