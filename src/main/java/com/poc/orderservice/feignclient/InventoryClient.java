@@ -11,6 +11,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 @FeignClient(name = "inventory-service", url = "${inventory.service.url}")
 public interface InventoryClient {
 
-    @PostMapping("/create-inventory")
+    @PostMapping
     ResponseEntity<ApiResponse> createInventory(@RequestBody InventoryRequestDto inventoryRequest);
 }
